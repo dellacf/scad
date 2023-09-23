@@ -61,7 +61,53 @@ con_screw_d = 3;
 
 con_l = 5;
 
-// copy an element to the corners of a square
+/*
+edge = [
+	1 => copy element to the left edge (-y)
+	1 => copy element to the front edge (+x)
+	1 => copy element to the right edge (+y)
+	1 => copy element to the back edge(-x)
+]
+*/
+module edge_copy(x_count=1, y_count=1, edge=[1,1,1,1]) {
+	// left edge
+	if (edge[0]) {
+		yy = -grid_size/2;
+		for (xx=[0:x_count-1]) {
+			translate([xx*grid_size, yy, 0])
+				children();
+		}
+	}
+	// front edge
+	if (edge[1]) {
+		xx = grid_size * (x_count - 1/2);
+		for (yy=[0:y_count-1]) {
+			translate([xx, yy*grid_size, 0])
+				rotate([0,0,90])
+					children();
+		}
+	}
+	// right edge
+	if (edge[2]) {
+		yy = grid_size * (y_count - 1/2);
+		for (xx=[0:x_count-1]) {
+			translate([xx*grid_size, yy, 0])
+				rotate([0,0,180])
+					children();
+		}
+	}
+	// back edge
+	if (edge[3]) {
+		xx = -grid_size/2;
+		for (yy=[0:y_count-1]) {
+			translate([xx, yy*grid_size, 0])
+				rotate([0,0,270])
+					children();
+		}
+	}
+}
+
+// copy an element to the corners of a grid
 module corner_copy(r, x_count=1, y_count=1) {
 	for (xx=[-r, grid_size*(x_count-1) + r]) {
 		for (yy=[-r, grid_size*(y_count-1) + r]) {

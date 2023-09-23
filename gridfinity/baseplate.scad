@@ -1,9 +1,10 @@
 // include instead of use to get the constants
 include <modules.scad>
 
-baseplate_lr_con(3,3);
+// baseplate_lr_con(3,3);
 // rotate([0,0,270])
-// connector_shape();
+edge_copy(3,3)
+connector_shape();
 
 module connector_shape() {
 	inner_w = 4;
@@ -12,61 +13,6 @@ module connector_shape() {
 	hight = 4;
 	linear_extrude(2)
 		polygon([[-inner_w/2,0], [inner_w/2,0], [outer_w/2,length], [-outer_w/2,length]]);
-}
-
-// left = -y
-module connector_left(x_count=1, y_count=1, male=true) {
-	rot = male ? 180 : 0;
-	yy = -grid_size/2;
-	for (xx=[0:x_count-1]) {
-		translate([xx*grid_size, yy, 0])
-			rotate([0,0,rot])
-				connector_shape();
-	}
-}
-
-// front = +x
-module connector_front(x_count=1, y_count=1, male=true) {
-	rot = male ? 270 : 90;
-	xx = grid_size * (x_count - 1/2);
-	for (yy=[0:y_count-1]) {
-		translate([xx, yy*grid_size, 0])
-			rotate([0,0,rot])
-				connector_shape();
-	}
-}
-
-// right = +y
-module connector_right(x_count=1, y_count=1, male=true) {
-	rot = male ? 0 : 180;
-	yy = grid_size * (y_count - 1/2);
-	for (xx=[0:x_count-1]) {
-		translate([xx*grid_size, yy, 0])
-			rotate([0,0,rot])
-				connector_shape();
-	}
-}
-
-// back = -x
-module connector_back(x_count=1, y_count=1, male=true) {
-	rot = male ? 90 : 270;
-	xx = -grid_size/2;
-	for (yy=[0:y_count-1]) {
-		translate([xx, yy*grid_size, 0])
-			rotate([0,0,rot])
-				connector_shape();
-	}
-}
-
-module baseplate_lr_con(x_count=1, y_count=1) {
-	difference() {
-		union() {
-			baseplate(x_count, y_count);
-			connector_right(x_count, y_count, true);
-		}
-		connector_left(x_count, y_count, false);
-	}
-	
 }
 
 // baseplate that can be resized in x and y diection
