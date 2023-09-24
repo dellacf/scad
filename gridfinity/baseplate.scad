@@ -3,16 +3,90 @@ include <modules.scad>
 
 // baseplate_lr_con(3,3);
 // rotate([0,0,270])
-edge_copy(3,3)
-connector_shape();
+//edge_copy(3,3)
+neg_connector([1,1,1]);
 
-module connector_shape() {
-	inner_w = 4;
-	outer_w = 6;
-	length = 3;
-	hight = 4;
-	linear_extrude(2)
-		polygon([[-inner_w/2,0], [inner_w/2,0], [outer_w/2,length], [-outer_w/2,length]]);
+hight = 2;
+inner_w = 2;
+outer_w = 3;
+inner_l = 1;
+outer_l = 2;
+total_l = inner_l + outer_l;
+
+chamfer = 0.5;
+
+module raw_connector_section(hight, inner_w, inner_l, outer_w, total_l) {
+	linear_extrude(hight)
+		polygon([
+			[0, 0],
+			[inner_w, 0],
+			[inner_w, inner_l],
+			[outer_w, total_l],
+			[0, total_l]
+		]);
+}
+ 
+module showPoints(v) {
+    for (i = [0: len(v)-1]) {
+        translate(v[i]) color("red") 
+        text(str(i), font = "Courier New", size=0.2);
+    }
+}
+
+module neg_connector_section(scale=[1,1,1]) {
+	real_h = hight * scale[2];
+	real_iw = inner_w * scale[0];
+	real_ow = outer_w * scale[0];
+	real_il = inner_l * scale[1];
+	real_ol = outer_l * scale[1];
+	real_tl = total_l * scale[1];
+
+	diff_wh = (real_ow - real_iw)/2;
+	side_chamfer_al = chamfer * diff_wh / real_ol;
+	side_chamfer_aw = chamfer * diff_wh / real_ol / (cos(atan(real_ol/diff_wh)));
+	
+	p = [
+		[real_iw-chamfer, 0, real_h],
+		[real_iw-chamfer, real_il+side_chamfer_al, real_h],
+		[real_ow-(chamfer+side_chamfer_aw), real_tl-chamfer, real_h],
+		[0, real_tl-chamfer, real_h],
+		[0, real_tl, real_h],
+		[real_ow, real_tl, real_h],
+		[real_iw, real_il, real_h],
+		[real_iw, 0, real_h],
+		[0, real_tl, real_h-chamfer],
+		[real_ow, real_tl, real_h-chamfer],
+		[real_iw, real_il, real_h-chamfer],
+		[real_iw, 0, real_h-chamfer],
+	];
+	// showPoints(p);
+	f = [
+		[0,1,2,3,4,5,6,7],
+		[8,9,5,4],
+		[9,10,6,5],
+		[10,11,7,6],
+		[0,7,11],
+		[8,4,3],
+		[3,2,9,8],
+		[2,1,10,9],
+		[11,10,1,0],
+	];
+
+	difference(){
+		raw_connector_section(real_h, real_iw, real_il, real_ow, real_tl);
+		polyhedron(points = p, faces = f);
+	};
+}
+
+module neg_connector(scale=[1,1,1]) {
+	neg_connector_section(scale);
+	mirror([1,0,0])
+		neg_connector_section(scale);
+	mirror([0,1,0]) {
+		neg_connector_section(scale);
+		mirror([1,0,0])
+			neg_connector_section(scale);
+	}
 }
 
 // baseplate that can be resized in x and y diection
